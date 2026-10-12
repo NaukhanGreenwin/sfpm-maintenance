@@ -140,8 +140,8 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
 }
 .step-body { margin-top: 28px; }
 @media (min-width: 1024px) { .step-body { margin-top: 36px; } }
-.stack-md > * + * { margin-top: 20px; }
-.stack-lg > * + * { margin-top: 32px; }
+.stack-md > :not(:first-child) { margin-top: 20px; }
+.stack-lg > :not(:first-child) { margin-top: 36px; }
 .lede-sm { color: var(--muted); font-size: 1rem; max-width: 52ch; text-wrap: pretty; }
 
 .error-summary { margin-top: 18px; color: var(--alert); font-size: .9375rem; display: flex; gap: 8px; }
