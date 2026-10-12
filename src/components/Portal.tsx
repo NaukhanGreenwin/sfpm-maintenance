@@ -595,7 +595,7 @@ function Confirmation({ result, d, media, headingRef, onRestart }: {
   return (
     <section className="confirm step" aria-labelledby="confirm-title">
       <p className="eyebrow eyebrow-accent"><IconCheck size={14} /> Request received</p>
-      <h2 id="confirm-title" ref={headingRef} tabIndex={-1} className="confirm-title">Thank you. We have your request.</h2>
+      <h2 id="confirm-title" ref={headingRef} tabIndex={-1} className="confirm-title"><span className="block">Thank you.</span> <span className="block">We have your request.</span></h2>
 
       <div className="ref">
         <p className="ref-label">Your reference</p>
