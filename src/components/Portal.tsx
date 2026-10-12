@@ -147,6 +147,8 @@ export default function Portal() {
 
   useEffect(() => {
     if (firstRender.current) { firstRender.current = false; return; }
+    // Instant jump to the top of the new step (the page scrolls inside .page on phones).
+    document.querySelector<HTMLElement>(".page")?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     headingRef.current?.focus({ preventScroll: true });
   }, [step, result]);
@@ -202,6 +204,15 @@ export default function Portal() {
       setResult(res);
     } finally { setSending(false); }
   };
+  // Single-choice steps advance on their own ~150ms after the tap (no Continue needed).
+  const nextRef = useRef(next);
+  nextRef.current = next;
+  const [autoAdvance, setAutoAdvance] = useState(0);
+  useEffect(() => {
+    if (!autoAdvance) return;
+    const t = window.setTimeout(() => { void nextRef.current(); }, 150);
+    return () => window.clearTimeout(t);
+  }, [autoAdvance]);
   const back = () => { setErrors({}); setReturnToReview(false); setStep((s) => Math.max(0, s - 1)); };
   const goto = (k: StepKey) => { setErrors({}); setReturnToReview(true); setStep(STEPS.findIndex((s) => s.key === k)); };
   const forget = () => {
@@ -234,7 +245,7 @@ export default function Portal() {
                 <label key={c.value} className="tile">
                   <input type="radio" name="category" id={c.value === CATEGORIES[0].value ? "category" : undefined}
                     checked={d.category === c.value}
-                    onChange={() => { setD((x) => ({ ...x, category: c.value, issues: x.category === c.value ? x.issues : [], appliance: x.category === c.value ? x.appliance : "" })); setErrors({}); }} />
+                    onChange={() => { setD((x) => ({ ...x, category: c.value, issues: x.category === c.value ? x.issues : [], appliance: x.category === c.value ? x.appliance : "" })); setErrors({}); setAutoAdvance((n) => n + 1); }} />
                   <span className="tile-icon"><CategoryIcon name={c.value} /></span>
                   <span className="tile-label">{c.label}</span>
                   <span className="tile-tick" aria-hidden="true"><IconCheck size={14} /></span>
@@ -292,7 +303,7 @@ export default function Portal() {
                 {URGENCY.map((u) => (
                   <label key={u.value} className={`option option-${u.value}`}>
                     <input type="radio" name="urgency" id={u.value === "emergency" ? "urgency" : undefined}
-                      checked={d.urgency === u.value} onChange={() => set("urgency", u.value)} />
+                      checked={d.urgency === u.value} onChange={() => { set("urgency", u.value); if (u.value !== "emergency") setAutoAdvance((n) => n + 1); }} />
                     <span className="option-radio" aria-hidden="true" />
                     <span className="option-text">
                       <span className="option-label">{u.label}</span>
@@ -542,7 +553,7 @@ export default function Portal() {
                     <button type="button" className="btn btn-ghost" onClick={back}>
                       <IconArrowLeft size={20} /><span>Back</span>
                     </button>
-                  ) : <span />}
+                  ) : null}
                   <button type="submit" className="btn btn-primary btn-next" disabled={sending} aria-busy={sending}>
                     <span>{key === "review" ? (sending ? "Submitting..." : "Submit request") : returnToReview ? "Back to review" : "Continue"}</span>
                     {!sending && <IconArrowRight size={20} />}
